@@ -1,28 +1,25 @@
 L.AllenBrainLayer = L.TileLayer.extend({
 
     initialize: function (atlasId, options) {
-        this._fetchSliceUrls(atlasId, (error, slicesInformation) => {
-            this._slices = slicesInformation;
+        this._atlasId = atlasId;
+        this._getAtlasSlices(atlasId, (error, slices) => {
+            this._slices = slices;
         });
     },
 
     getTileUrl: function (coords) {
         if (this._slices) {
             var url = `http://api.brain-map.org/api/v2/image_download/${this._slices[1].id}?downsample=5`;
-            console.log(url);
             return url;
         }
-        console.log("no slices");
         return null;
-        //var i = Math.ceil(Math.random() * 4);
-        //return "http://placekitten.com/256/256?image=" + i;
     },
 
     getAttribution: function () {
         return "<a href='http://brain-map.org'>Allen Brain Atlas</a>"
     },
 
-    _fetchSliceUrls: function (atlasId, callback) {
+    _getAtlasSlices: function (atlasId, callback) {
         var getSliceInformation = function (slices, atlasImage) {
             slices[atlasImage.section_number] = {
                 id: atlasImage.id,
@@ -42,8 +39,8 @@ L.AllenBrainLayer = L.TileLayer.extend({
                 var msg = jsonData.msg[0];
                 var atlasDataSets = msg.atlas_data_sets[0];
                 var atlasImages = atlasDataSets.atlas_images;
-                var slicesInformation = atlasImages.reduce(getSliceInformation, {});
-                callback(null, slicesInformation);
+                var slices = atlasImages.reduce(getSliceInformation, {});
+                callback(null, slices);
             } else {
                 callback("Error processing http request.", null);
             }
