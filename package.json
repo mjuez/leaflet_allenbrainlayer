@@ -1,0 +1,17 @@
+{
+  "name": "allen-brain",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "leaflet": "^1.0.3",
+    "request": "^2.81.0",
+    "unirest": "^0.5.1"
+  }
+}
