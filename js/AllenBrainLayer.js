@@ -2,20 +2,18 @@ L.AllenBrainLayer = L.TileLayer.extend({
 
     initialize: function (atlasId, options) {
         this._atlasId = atlasId;
+        L.Util.setOptions(this, options);
         this._getAtlasSlices(atlasId, (error, slices) => {
             if (!error) {
                 this._slices = slices;
                 this.setSlice(200);
-                this.redraw();
             }
         });
     },
 
     getTileUrl: function (coords) {
         if (this._slices) {
-            var url = this._slice.getTileUrl(coords);
-            console.log(url);
-            return url;
+            return this._slice.getTileUrl(coords);
         }
         return null;
     },
@@ -24,9 +22,10 @@ L.AllenBrainLayer = L.TileLayer.extend({
         return "<a href='http://brain-map.org'>Allen Brain Atlas</a>"
     },
 
-    setSlice: function(numSlice) {
+    setSlice: function (numSlice) {
         this._slice = this._slices[numSlice];
         this.options.maxNativeZoom = this._slice.maxDownsample;
+        this.redraw();
     },
 
     _getAtlasSlices: function (atlasId, callback) {
@@ -45,32 +44,22 @@ L.AllenBrainLayer = L.TileLayer.extend({
                 return numTiles;
             }
 
-            var calculateMaxDownsample = function (size, maxSize = 256, maxDownsample = 0){
-                if(size <= maxSize){
-                    return maxDownsample;
+            var calculateMaxDownsampleAndTileSize = function (size, maxSize = 256, maxDownsample = 0) {
+                if (size <= maxSize) {
+                    return [maxDownsample, size];
                 }
-                return calculateMaxDownsample(size / 2, maxSize, maxDownsample + 1);
+                return calculateMaxDownsampleAndTileSize(size / 2, maxSize, maxDownsample + 1);
             }
-
-            /*var getAdjustedSizeAndDownsample = function (size, currentSize = 256, downsample = 0) {
-                if (currentSize >= size) {
-                    return [currentSize, downsample];
-                }
-                return getAdjustedSizeAndDownsample(size, currentSize * 2, downsample + 1);
-            }
-
-            if(data.id === 100960327){
-                console.log("hola");
-            }*/
 
             var maxSize = Math.max(data.width, data.height);
-            var maxDownsample = calculateMaxDownsample(maxSize);
+            [maxDownsample, tileSize] = calculateMaxDownsampleAndTileSize(maxSize);
 
             var slice = {
                 coords_axis: [data.x, data.y],
                 width: data.width,
                 height: data.height,
                 maxDownsample: maxDownsample,
+                tileSize: tileSize,
                 url: `http://api.brain-map.org/api/v2/image_download/${data.id}?`,
                 getTileUrl: function (coords) {
                     var zoom = coords.z;
@@ -114,9 +103,6 @@ L.AllenBrainLayer = L.TileLayer.extend({
                 var atlasDataSets = msg.atlas_data_sets[0];
                 var atlasImages = atlasDataSets.atlas_images;
                 [slices, maxSize] = atlasImages.reduce(getSliceInformation, [{}, 0]);
-                //[adjustedMaxSize, maxDownsample] = getAdjustedSizeAndDownsample(maxSize);
-                //console.log(`adjusted size: ${adjustedMaxSize}, max downsample: ${maxDownsample}`);
-                //Object.keys(slices).map((key) => slices[key].adjust(adjustedMaxSize, maxDownsample));
                 callback(null, slices);
             } else {
                 callback("Error processing http request.", null);
