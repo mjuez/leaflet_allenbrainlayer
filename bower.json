@@ -1,0 +1,22 @@
+{
+  "name": "allen-brain",
+  "description": "",
+  "main": "index.js",
+  "authors": [
+    "Mario Juez <mjuezath@gmail.com>"
+  ],
+  "license": "GPL-3.0",
+  "homepage": "https://github.com/mjuez/leaflet_allenbrainlayer",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "leaflet": "^1.0.3",
+    "jquery": "^3.2.1"
+  }
+}
