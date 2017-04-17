@@ -13,7 +13,7 @@ L.AllenBrainLayer = L.GridLayer.extend({
 
     createTile: function (coords) {
         var tile = document.createElement('img');
-        if(this._slices){
+        if (this._slices) {
             tile.src = this._slice.getTileUrl(coords);
         }
         return tile;
@@ -35,8 +35,44 @@ L.AllenBrainLayer = L.GridLayer.extend({
         this.options.maxNativeZoom = this._slice.maxDownsample;
         this.options.minNativeZoom = 0;
         this.options.tileSize = this._slice.tileSize;
+        this._map.options.crs = L.CRS.allenbrain(Math.max(this._slice.tileSize.x, this._slice.tileSize.y));
+        this._updateLevels();
+        this._resetGrid();
         this.redraw();
     },
+
+    /*_resetGrid: function () {
+        var map = this._map,
+            crs = map.options.crs,
+            tileSize = this._tileSize = this.getTileSize(),
+            tileZoom = this._tileZoom;
+
+        console.log(tileSize);
+        console.log(tileZoom);
+
+        var tmp = tileSize.max * Math.pow(2, this._tileZoom);
+        var bounds = L.point(tmp, tmp);
+        if (bounds) {
+            console.log(bounds);
+            this._globalTileRange = this._pxBoundsToTileRange(bounds);
+        }
+
+        this._wrapX = crs.wrapLng && !this.options.noWrap && [
+            Math.floor(map.project([0, crs.wrapLng[0]], tileZoom).x / tileSize.x),
+            Math.ceil(map.project([0, crs.wrapLng[1]], tileZoom).x / tileSize.y)
+        ];
+        this._wrapY = crs.wrapLat && !this.options.noWrap && [
+            Math.floor(map.project([crs.wrapLat[0], 0], tileZoom).y / tileSize.x),
+            Math.ceil(map.project([crs.wrapLat[1], 0], tileZoom).y / tileSize.y)
+        ];
+    },
+
+    _pxBoundsToTileRange: function (bounds) {
+        var tileSize = this.getTileSize();
+        return new L.Bounds(
+            bounds.min.unscaleBy(tileSize).floor(),
+            bounds.max.unscaleBy(tileSize).ceil().subtract([1, 1]));
+    },*/
 
     _getAtlasSlices: function (atlasId, callback) {
         var createSlice = function (data) {
