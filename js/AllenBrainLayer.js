@@ -1,4 +1,4 @@
-L.AllenBrainLayer = L.TileLayer.extend({
+L.AllenBrainLayer = L.GridLayer.extend({
 
     initialize: function (atlasId, options) {
         this._atlasId = atlasId;
@@ -11,12 +11,20 @@ L.AllenBrainLayer = L.TileLayer.extend({
         });
     },
 
-    getTileUrl: function (coords) {
+    createTile: function (coords) {
+        var tile = document.createElement('img');
+        if(this._slices){
+            tile.src = this._slice.getTileUrl(coords);
+        }
+        return tile;
+    },
+
+    /*getTileUrl: function (coords) {
         if (this._slices) {
             return this._slice.getTileUrl(coords);
         }
         return null;
-    },
+    },*/
 
     getAttribution: function () {
         return "<a href='http://brain-map.org'>Allen Brain Atlas</a>"
@@ -25,6 +33,8 @@ L.AllenBrainLayer = L.TileLayer.extend({
     setSlice: function (numSlice) {
         this._slice = this._slices[numSlice];
         this.options.maxNativeZoom = this._slice.maxDownsample;
+        this.options.minNativeZoom = 0;
+        this.options.tileSize = this._slice.tileSize;
         this.redraw();
     },
 
@@ -44,15 +54,22 @@ L.AllenBrainLayer = L.TileLayer.extend({
                 return numTiles;
             }
 
-            var calculateMaxDownsampleAndTileSize = function (size, maxSize = 256, maxDownsample = 0) {
+            var calculateMaxDownsample = function (size, maxSize = 256, maxDownsample = 0) {
                 if (size <= maxSize) {
-                    return [maxDownsample, size];
+                    return maxDownsample;
                 }
-                return calculateMaxDownsampleAndTileSize(size / 2, maxSize, maxDownsample + 1);
+                return calculateMaxDownsample(size / 2, maxSize, maxDownsample + 1);
+            }
+
+            var calculateTileSize = function (width, height, downsample) {
+                var downsampledWidth = Math.floor(width / Math.pow(2, downsample));
+                var downsampledHeight = Math.floor(height / Math.pow(2, downsample));
+                return L.point(downsampledWidth, downsampledHeight);
             }
 
             var maxSize = Math.max(data.width, data.height);
-            [maxDownsample, tileSize] = calculateMaxDownsampleAndTileSize(maxSize);
+            var maxDownsample = calculateMaxDownsample(maxSize);
+            var tileSize = calculateTileSize(data.width, data.height, maxDownsample);
 
             var slice = {
                 coords_axis: [data.x, data.y],
